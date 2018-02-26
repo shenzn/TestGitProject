@@ -15,7 +15,7 @@ const char * sprintf_m(const char format[], const void *value)
         result_str[i] = 0;
 
     i=0;
-    while (1 && i<STR_SIZE)
+    while (i<STR_SIZE)
     {
         if (format[i]=='%') // exit loop in case '%' symbol
             break;
@@ -32,30 +32,31 @@ const char * sprintf_m(const char format[], const void *value)
     uint8_t *ptr = (uint8_t*)value;
     uint8_t nvalue = (uint8_t)(*ptr);
     uint8_t ascii_shift = 48 ;
-    switch (format[i+1])
+    n=i; // number where % is located
+    switch (format[n+1])
     {
         case 's': // string
         while (((char)(*ptr))!=0)
         {
-            result_str[i] = (char) (*ptr);
+            result_str[n] = (char) (*ptr);
             ptr++;
-            i++;
+            n++;
         }
         break;
 
         case 'n': // number
-        result_str[i] = ( nvalue / 100 ) ; // Nxx
-        result_str[i+1] = ( ( nvalue - ( result_str[i] * 100 )  ) / 10 )  ; // xNx
-        result_str[i+2] = nvalue - ( ( result_str[i] * 100 ) + (result_str[i+1] * 10)  ); // xxN
-        result_str[i] += ascii_shift;
-        result_str[i+1] += ascii_shift;
-        result_str[i+2] += ascii_shift;
-        i = i + 2;
+        result_str[n] = ( nvalue / 100 ) ; // Nxx
+        result_str[n+1] = ( ( nvalue - ( result_str[n] * 100 )  ) / 10 )  ; // xNx
+        result_str[n+2] = nvalue - ( ( result_str[n] * 100 ) + (result_str[n+1] * 10)  ); // xxN
+        result_str[n] += ascii_shift;
+        result_str[n+1] += ascii_shift;
+        result_str[n+2] += ascii_shift;
+        n = n + 3;
         break;
 
         case 'c':
-        result_str[i] = (char) nvalue;
-        i++;
+        result_str[n] = (char) nvalue;
+        n++;
         break;
 
         default:
@@ -64,13 +65,12 @@ const char * sprintf_m(const char format[], const void *value)
     }
 
     //copy all last data which are after %n %c %s
-    n=i+1;
-    while (format[n]!=0 && n<STR_SIZE)
+    i=i+2; // shift after %N
+    while (format[i]!=0 && n<STR_SIZE)
     {
-        result_str[n] = format[n];
-        n++;
+        result_str[n] = format[i];
+        n++; i++;
     }
-    result_str[n]=0; // /n
 
     return result_str;
 
@@ -78,9 +78,9 @@ const char * sprintf_m(const char format[], const void *value)
 
 int main(int argc, char *argv[])
 {
-    const char *formatS = "Hello %s";
-    const char *world = "World!";
-    const char *formatN = "Value: %n ";
+    const char *formatS = "Hello %s!";
+    const char *world = "World";
+    const char *formatN = "Value: %n";
     const uint8_t a = 42;
     const char *formatC = "Char: %c";
     const char c = 'P';
